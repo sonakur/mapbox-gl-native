@@ -12,6 +12,7 @@
 #include <mbgl/style/source.hpp>
 #include <mbgl/style/style.hpp>
 #include <mbgl/util/size.hpp>
+#include <mbgl/actor/actor_ref.hpp>
 
 namespace mbgl {
 
@@ -51,6 +52,9 @@ public:
     // Map
     void jumpTo(const CameraOptions&);
 
+    // Internal
+    void updateInternal(TimePoint timePoint);
+
     MapObserver& observer;
     RendererFrontend& rendererFrontend;
 
@@ -74,6 +78,8 @@ public:
     bool loading = false;
     bool rendererFullyLoaded;
     std::unique_ptr<StillImageRequest> stillImageRequest;
+    std::shared_ptr<Mailbox> mailbox;
+    ActorRef<Map::Impl> actor;
 };
 
 } // namespace mbgl

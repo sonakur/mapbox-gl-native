@@ -4,6 +4,7 @@
 #include <mbgl/storage/file_source.hpp>
 #include <mbgl/style/style_impl.hpp>
 #include <mbgl/util/exception.hpp>
+#include <mbgl/actor/scheduler.hpp>
 
 namespace mbgl {
 
@@ -19,7 +20,9 @@ Map::Impl::Impl(RendererFrontend& frontend_,
           crossSourceCollisions(mapOptions.crossSourceCollisions()),
           fileSource(std::move(fileSource_)),
           style(std::make_unique<style::Style>(*fileSource, pixelRatio)),
-          annotationManager(*style) {
+          annotationManager(*style),
+          mailbox(std::make_shared<Mailbox>(*Scheduler::GetCurrent())),
+          actor(*this, mailbox) {
     transform.setNorthOrientation(mapOptions.northOrientation());
     style->impl->setObserver(this);
     rendererFrontend.setObserver(*this);
@@ -39,12 +42,16 @@ void Map::Impl::onSourceChanged(style::Source& source) {
 }
 
 void Map::Impl::onUpdate() {
-    // Don't load/render anything in still mode until explicitly requested.
-    if (mode != MapMode::Continuous && !stillImageRequest) {
-        return;
+    if (mode == MapMode::Continuous) {
+        actor.invoke(&Map::Impl::updateInternal, Clock::now());
+    } else if (stillImageRequest) {
+        updateInternal(Clock::time_point::max());
     }
+}
 
-    TimePoint timePoint = mode == MapMode::Continuous ? Clock::now() : Clock::time_point::max();
+void Map::Impl::updateInternal(TimePoint timePoint) {
+    // Don't load/render anything in still mode until explicitly requested.
+    assert(mode == MapMode::Continuous || stillImageRequest);
 
     transform.updateTransitions(timePoint);
 
