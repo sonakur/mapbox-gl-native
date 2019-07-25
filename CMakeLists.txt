@@ -1,20 +1,21 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project("Mapbox GL Native" LANGUAGES CXX C)
 
-enable_testing()
-
-option(MBGL_WITH_CORE_ONLY "Build only the core bits, no platform code" OFF)
-option(MBGL_WITH_QT        "Build Mapbox GL Qt bindings"                OFF)
-option(MBGL_WITH_SANITIZER "Use [address|thread|memory|undefined] here" OFF)
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER Core)
+
+enable_testing()
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release MinSizeRel DebugCoverage Sanitize)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
+
+option(MBGL_WITH_CORE_ONLY "Build only the core bits, no platform code" OFF)
+option(MBGL_WITH_QT        "Build Mapbox GL Qt bindings"                OFF)
+option(MBGL_WITH_SANITIZER "Use [address|thread|memory|undefined] here" OFF)
+option(MBGL_WITH_TIDY      "Enables clang tidy for static analysis"     OFF)
 
 set(CMAKE_CXX_FLAGS_DEBUGCOVERAGE "${CMAKE_CXX_FLAGS_DEBUG} --coverage")
 set(CMAKE_C_FLAGS_DEBUGCOVERAGE "${CMAKE_CXX_FLAGS_DEBUG} --coverage")
@@ -25,6 +26,14 @@ set(CMAKE_C_FLAGS_SANITIZE "-g -O1 -fno-omit-frame-pointer -fno-optimize-sibling
 if(MBGL_WITH_QT)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
+endif()
+
+if(${MBGL_WITH_TIDY})
+    find_program(MBGL_CLANG_TIDY NAMES clang-tidy)
+
+    if(NOT MBGL_CLANG_TIDY)
+        message(FATAL "clang-tidy not found")
+    endif()
 endif()
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
@@ -814,6 +823,8 @@ target_link_libraries(mbgl-core PUBLIC
 )
 
 set_property(TARGET mbgl-core PROPERTY FOLDER Core)
+set_property(TARGET mbgl-core PROPERTY CXX_CLANG_TIDY ${MBGL_CLANG_TIDY})
+
 add_library(Mapbox::Map ALIAS mbgl-core)
 
 if(MBGL_WITH_CORE_ONLY)
@@ -829,7 +840,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
 elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin)
     include(${PROJECT_SOURCE_DIR}/platform/macos/macos.cmake)
 else()
-    message(FATAL_ERROR "-- Unsupported target platform: " ${CMAKE_SYSTEM_NAME})
+    message(FATAL_ERROR "Unsupported target platform: " ${CMAKE_SYSTEM_NAME})
 endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/test)
