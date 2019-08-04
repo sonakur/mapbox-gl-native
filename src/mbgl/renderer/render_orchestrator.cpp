@@ -361,26 +361,23 @@ std::unique_ptr<RenderTree> RenderOrchestrator::createRenderTree(const UpdatePar
         }
 
         bool symbolBucketsChanged = false;
-        const bool placementChanged = !placement->stillRecent(updateParameters.timePoint);
-        std::set<std::string> usedSymbolLayers;
+        for (auto it = layersNeedPlacement.rbegin(); it != layersNeedPlacement.rend(); ++it) {
+            if (crossTileSymbolIndex.addLayer(*it, updateParameters.transformState.getLatLng().longitude())) symbolBucketsChanged = true;
+        }
+        const bool placementChanged = !placement->stillRecent(updateParameters.timePoint) || symbolBucketsChanged;
         if (placementChanged) {
+            std::set<std::string> usedSymbolLayers;
             placement = std::make_unique<Placement>(
                 updateParameters.transformState, updateParameters.mode,
                 updateParameters.transitionOptions, updateParameters.crossSourceCollisions,
                 std::move(placement));
-        }
 
-        for (auto it = layersNeedPlacement.rbegin(); it != layersNeedPlacement.rend(); ++it) {
-            const RenderLayer& layer = *it;
-            if (crossTileSymbolIndex.addLayer(layer, updateParameters.transformState.getLatLng().longitude())) symbolBucketsChanged = true;
-
-            if (placementChanged) {
+            for (auto it = layersNeedPlacement.rbegin(); it != layersNeedPlacement.rend(); ++it) {
+                const RenderLayer& layer = *it;
                 usedSymbolLayers.insert(layer.getID());
                 placement->placeLayer(layer, renderTreeParameters->transformParams.projMatrix, updateParameters.debugOptions & MapDebugOptions::Collision);
             }
-        }
 
-        if (placementChanged) {
             placement->commit(updateParameters.timePoint);
             crossTileSymbolIndex.pruneUnusedLayers(usedSymbolLayers);
             for (const auto& entry : renderSources) {
@@ -391,7 +388,7 @@ std::unique_ptr<RenderTree> RenderOrchestrator::createRenderTree(const UpdatePar
         }
 
         for (auto it = layersNeedPlacement.rbegin(); it != layersNeedPlacement.rend(); ++it) {
-            placement->updateLayerBuckets(*it, updateParameters.transformState, placementChanged || symbolBucketsChanged);
+            placement->updateLayerBuckets(*it, updateParameters.transformState, placementChanged);
         }
 
         renderTreeParameters->symbolFadeChange = placement->symbolFadeChange(updateParameters.timePoint);

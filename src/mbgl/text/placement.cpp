@@ -510,7 +510,7 @@ void Placement::updateBucketOpacities(SymbolBucket& bucket, const TransformState
     if (bucket.hasCollisionBoxData()) bucket.collisionBox->dynamicVertices.clear();
     if (bucket.hasCollisionCircleData()) bucket.collisionCircle->dynamicVertices.clear();
 
-    JointOpacityState duplicateOpacityState(false, false, true);
+    const JointOpacityState duplicateOpacityState(false, false, true);
 
     const bool textAllowOverlap = bucket.layout->get<style::TextAllowOverlap>();
     const bool iconAllowOverlap = bucket.layout->get<style::IconAllowOverlap>();
@@ -522,7 +522,7 @@ void Placement::updateBucketOpacities(SymbolBucket& bucket, const TransformState
     // But we have to wait for placement if we potentially depend on a paired icon/text
     // with allow-overlap: false.
     // See https://github.com/mapbox/mapbox-gl-native/issues/12483
-    JointOpacityState defaultOpacityState(
+    const JointOpacityState defaultOpacityState(
             textAllowOverlap && (iconAllowOverlap || !bucket.hasIconData() || bucket.layout->get<style::IconOptional>()),
             iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || bucket.layout->get<style::TextOptional>()),
             true);
@@ -536,10 +536,6 @@ void Placement::updateBucketOpacities(SymbolBucket& bucket, const TransformState
             opacityState = duplicateOpacityState;
         } else if (it != opacities.end()) {
             opacityState = it->second;
-        }
-
-        if (it == opacities.end()) {
-            opacities.emplace(symbolInstance.crossTileID, defaultOpacityState);
         }
 
         seenCrossTileIDs.insert(symbolInstance.crossTileID);
