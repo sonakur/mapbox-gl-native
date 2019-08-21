@@ -53,7 +53,8 @@ FillExtrusionBucket::~FillExtrusionBucket() = default;
 void FillExtrusionBucket::addFeature(const GeometryTileFeature& feature,
                                      const GeometryCollection& geometry,
                                      const ImagePositions& patternPositions,
-                                     const PatternLayerMap& patternDependencies) {
+                                     const PatternLayerMap& patternDependencies,
+                                     std::size_t index) {
     for (auto& polygon : classifyRings(geometry)) {
         // Optimize polygons with many interior rings for earcut tesselation.
         limitHoles(polygon, 500);
@@ -158,9 +159,9 @@ void FillExtrusionBucket::addFeature(const GeometryTileFeature& feature,
     for (auto& pair : paintPropertyBinders) {
         const auto it = patternDependencies.find(pair.first);
         if (it != patternDependencies.end()){
-            pair.second.populateVertexVectors(feature, vertices.elements(), patternPositions, it->second);
+            pair.second.populateVertexVectors(feature, vertices.elements(), index, patternPositions, it->second);
         } else {
-            pair.second.populateVertexVectors(feature, vertices.elements(), patternPositions, {});
+            pair.second.populateVertexVectors(feature, vertices.elements(), index, patternPositions, {});
         }
     }
 }
@@ -184,6 +185,14 @@ float FillExtrusionBucket::getQueryRadius(const RenderLayer& layer) const {
     const auto& evaluated = getEvaluated<FillExtrusionLayerProperties>(layer.evaluatedProperties);
     const std::array<float, 2>& translate = evaluated.get<FillExtrusionTranslate>();
     return util::length(translate[0], translate[1]);
+}
+
+void FillExtrusionBucket::update(const FeatureStates& states, const GeometryTileLayer& layer, const std::string& layerID, const ImagePositions& imagePositions) {
+    auto it = paintPropertyBinders.find(layerID);
+    if (it != paintPropertyBinders.end()) {
+        it->second.updateVertexVectors(states, layer, imagePositions);
+    }
+    uploaded = false;
 }
 
 } // namespace mbgl
