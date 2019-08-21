@@ -255,7 +255,8 @@ bool RenderFillLayer::queryIntersectsFeature(
         const float,
         const TransformState& transformState,
         const float pixelsToTileUnits,
-        const mat4&) const {
+        const mat4&,
+        const PropertyMap&) const {
     const auto& evaluated = getEvaluated<FillLayerProperties>(evaluatedProperties);
     auto translatedQueryGeometry = FeatureIndex::translateQueryGeometry(
             queryGeometry,
