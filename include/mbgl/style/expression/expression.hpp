@@ -34,6 +34,9 @@ public:
     EvaluationContext(optional<mbgl::Value> accumulated_, GeometryTileFeature const * feature_) :
         accumulated(std::move(accumulated_)), feature(feature_)
     {}
+    EvaluationContext(float zoom_, GeometryTileFeature const * feature_, const PropertyMap* state_) :
+        zoom(zoom_), feature(feature_), featureState(state_)
+    {}
     EvaluationContext(optional<float> zoom_, GeometryTileFeature const * feature_, optional<double> colorRampParameter_) :
         zoom(std::move(zoom_)), feature(feature_), colorRampParameter(std::move(colorRampParameter_))
     {}
@@ -49,6 +52,7 @@ public:
     optional<double> colorRampParameter;
     // Contains formatted section object, std::unordered_map<std::string, Value>.
     const Value* formattedSection = nullptr;
+    const PropertyMap* featureState = nullptr;
 };
 
 template <typename T>
