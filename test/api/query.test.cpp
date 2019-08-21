@@ -14,10 +14,12 @@
 #include <mbgl/style/expression/dsl.hpp>
 #include <mbgl/renderer/renderer.hpp>
 #include <mbgl/gfx/headless_frontend.hpp>
+#include <mbgl/style/conversion/json.hpp>
 
 using namespace mbgl;
 using namespace mbgl::style;
 using namespace mbgl::style::expression;
+using namespace mbgl::style::conversion;
 using namespace std::literals;
 
 namespace {
@@ -124,6 +126,30 @@ TEST(Query, QuerySourceFeatures) {
 
     auto features1 = test.frontend.getRenderer()->querySourceFeatures("source3");
     EXPECT_EQ(features1.size(), 1u);
+}
+
+TEST(Query, QuerySourceFeatureStates) {
+    QueryTest test;
+
+    std::string expr(R"({"hover": true, "radius": 20})");
+    using JSValue = rapidjson::GenericValue<rapidjson::UTF8<>, rapidjson::CrtAllocator>;
+    rapidjson::GenericDocument<rapidjson::UTF8<>, rapidjson::CrtAllocator> document;
+    document.Parse(expr);
+    ASSERT_EQ(document.HasParseError(), false);
+    ASSERT_EQ(document.IsObject(), true);
+    ASSERT_EQ(document.HasMember("hover"), true);
+    ASSERT_EQ(document["hover"].IsBool(), true);
+    ASSERT_EQ(document.HasMember("radius"), true);
+    ASSERT_EQ(document["radius"].IsNumber(), true);
+
+    const JSValue* expression = &document;
+    auto newState = Convertible(expression);
+    test.frontend.getRenderer()->setFeatureState("source1", {}, "feature1", newState);
+
+    auto states = test.frontend.getRenderer()->getFeatureState("source1", {}, "feature1");
+    EXPECT_EQ(states.size(), 2u);
+    EXPECT_EQ(states["hover"], true);
+    EXPECT_EQ(states["radius"].get<uint64_t>(), 20u);
 }
 
 TEST(Query, QuerySourceFeaturesOptionValidation) {
