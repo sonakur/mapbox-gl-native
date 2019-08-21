@@ -286,7 +286,8 @@ std::unordered_map<std::string, std::vector<Feature>> TilePyramid::queryRendered
                                            const TransformState& transformState,
                                            const std::unordered_map<std::string, const RenderLayer*>& layers,
                                            const RenderedQueryOptions& options,
-                                           const mat4& projMatrix) const {
+                                           const mat4& projMatrix,
+                                           const SourceFeatureState& featureState) const {
     std::unordered_map<std::string, std::vector<Feature>> result;
     if (renderedTiles.empty() || geometry.empty()) {
         return result;
@@ -339,7 +340,8 @@ std::unordered_map<std::string, std::vector<Feature>> TilePyramid::queryRendered
                                    transformState,
                                    layers,
                                    options,
-                                   projMatrix);
+                                   projMatrix,
+                                   featureState);
     }
 
     return result;

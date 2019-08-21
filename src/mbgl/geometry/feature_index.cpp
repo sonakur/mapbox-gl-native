@@ -8,6 +8,7 @@
 #include <mbgl/math/minmax.hpp>
 #include <mbgl/style/filter.hpp>
 #include <mbgl/tile/tile_id.hpp>
+#include <mbgl/renderer/source_state.hpp>
 
 #include <mapbox/geometry/envelope.hpp>
 
@@ -48,7 +49,8 @@ void FeatureIndex::query(
         const RenderedQueryOptions& queryOptions,
         const UnwrappedTileID& tileID,
         const std::unordered_map<std::string, const RenderLayer*>& layers,
-        const float additionalQueryPadding) const {
+        const float additionalQueryPadding,
+        const SourceFeatureState& featureState) const {
     
     if (!tileData) {
         return;
@@ -74,7 +76,7 @@ void FeatureIndex::query(
         if (indexedFeature.sortIndex == previousSortIndex) continue;
         previousSortIndex = indexedFeature.sortIndex;
 
-        addFeature(result, indexedFeature, queryOptions, tileID.canonical, layers, queryGeometry, transformState, pixelsToTileUnits, posMatrix);
+        addFeature(result, indexedFeature, queryOptions, tileID.canonical, layers, queryGeometry, transformState, pixelsToTileUnits, posMatrix, &featureState);
     }
 }
     
@@ -113,7 +115,7 @@ FeatureIndex::lookupSymbolFeatures(const std::vector<IndexedSubfeature>& symbolF
 
     for (const auto& symbolFeature : sortedFeatures) {
         mat4 unusedMatrix;
-        addFeature(result, symbolFeature, queryOptions, tileID.canonical, layers, GeometryCoordinates(), {}, 0, unusedMatrix);
+        addFeature(result, symbolFeature, queryOptions, tileID.canonical, layers, GeometryCoordinates(), {}, 0, unusedMatrix, nullptr);
     }
     return result;
 }
@@ -127,7 +129,8 @@ void FeatureIndex::addFeature(
     const GeometryCoordinates& queryGeometry,
     const TransformState& transformState,
     const float pixelsToTileUnits,
-    const mat4& posMatrix) const {
+    const mat4& posMatrix,
+    const SourceFeatureState* featureState) const {
 
     // Lazily calculated.
     std::unique_ptr<GeometryTileLayer> sourceLayer;
@@ -148,10 +151,15 @@ void FeatureIndex::addFeature(
             geometryTileFeature = sourceLayer->getFeature(indexedFeature.index);
             assert(geometryTileFeature);
         }
+        PropertyMap state;
+        if (featureState) {
+            if (geometryTileFeature->getID().is<uint64_t>())
+                state = featureState->getState(sourceLayer->getName(), std::to_string(geometryTileFeature->getID().get<uint64_t>()));
+        }
 
         bool needsCrossTileIndex = renderLayer->baseImpl->getTypeInfo()->crossTileIndex == style::LayerTypeInfo::CrossTileIndex::Required;
         if (!needsCrossTileIndex &&
-             !renderLayer->queryIntersectsFeature(queryGeometry, *geometryTileFeature, tileID.z, transformState, pixelsToTileUnits, posMatrix)) {
+             !renderLayer->queryIntersectsFeature(queryGeometry, *geometryTileFeature, tileID.z, transformState, pixelsToTileUnits, posMatrix, state)) {
             continue;
         }
 
@@ -159,7 +167,11 @@ void FeatureIndex::addFeature(
             continue;
         }
 
-        result[layerID].emplace_back(convertFeature(*geometryTileFeature, tileID));
+        Feature feature = convertFeature(*geometryTileFeature, tileID);
+        feature.source = renderLayer->baseImpl->source;
+        feature.sourceLayer = sourceLayer->getName();
+        feature.state = state;
+        result[layerID].emplace_back(feature);
     }
 }
 
