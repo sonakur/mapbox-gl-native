@@ -66,8 +66,10 @@ void RenderTileSource::prepare(const SourcePrepareParameters& parameters) {
     tiles->reserve(tilePyramid.getRenderedTiles().size());
     for (auto& entry : tilePyramid.getRenderedTiles()) {
         tiles->emplace_back(entry.first, entry.second);
+        featureState.initializeTileState(tiles->back());
         tiles->back().prepare(parameters);
     }
+    featureState.coalesceChanges(*tiles);
     renderTiles = std::move(tiles);
 }
 
@@ -131,6 +133,18 @@ RenderTileSource::queryRenderedFeatures(const ScreenLineString& geometry,
 
 std::vector<Feature> RenderTileSource::querySourceFeatures(const SourceQueryOptions& options) const {
     return tilePyramid.querySourceFeatures(options);
+}
+
+void RenderTileSource::setFeatureState(const optional<std::string>& sourceLayerID,
+                                       const std::string& featureID,
+                                       const style::conversion::Convertible& state) {
+
+    featureState.updateState(sourceLayerID, featureID, state);
+}
+
+PropertyMap RenderTileSource::getFeatureState(const optional<std::string>& sourceLayerID,
+                                              const std::string& featureID) const {
+    return featureState.getState(sourceLayerID, featureID);
 }
 
 void RenderTileSource::reduceMemoryUse() {

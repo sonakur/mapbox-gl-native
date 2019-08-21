@@ -21,6 +21,12 @@ namespace gfx {
 class RendererBackend;
 } // namespace gfx
 
+namespace style {
+namespace conversion {
+class Convertible;
+} // namespace conversion
+} // namespace style
+
 class Renderer {
 public:
     Renderer(gfx::RendererBackend&, float pixelRatio_,
@@ -48,6 +54,17 @@ public:
                                                  const std::string& extension,
                                                  const std::string& extensionField,
                                                  const optional<std::map<std::string, Value>>& args = {}) const;
+
+    void setFeatureState(const std::string& sourceID,
+                         const optional<std::string>& sourceLayerID,
+                         const std::string& featureID,
+                         const style::conversion::Convertible& state);
+
+    PropertyMap getFeatureState(const std::string& sourceID,
+                                const optional<std::string>& sourceLayerID,
+                                const std::string& featureID) const;
+
+
 
     // Debug
     void dumpDebugLogs();

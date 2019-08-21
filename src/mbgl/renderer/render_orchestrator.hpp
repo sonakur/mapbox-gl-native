@@ -64,6 +64,15 @@ public:
                                                  const std::string& extensionField,
                                                  const optional<std::map<std::string, Value>>& args) const;
 
+    void setFeatureState(const std::string& sourceID,
+                         const optional<std::string>& layerID,
+                         const std::string& featureID,
+                         const style::conversion::Convertible& state);
+
+    PropertyMap getFeatureState(const std::string& sourceID,
+                                const optional<std::string>& layerID,
+                                const std::string& featureID) const;
+
     void reduceMemoryUse();
     void dumpDebugLogs();
 

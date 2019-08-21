@@ -3,6 +3,7 @@
 #include <mbgl/renderer/render_source.hpp>
 #include <mbgl/renderer/tile_pyramid.hpp>
 #include <mbgl/style/sources/vector_source_impl.hpp>
+#include <mbgl/renderer/source_state.hpp>
 
 namespace mbgl {
 
@@ -34,6 +35,13 @@ public:
     std::vector<Feature>
     querySourceFeatures(const SourceQueryOptions&) const override;
 
+    virtual void setFeatureState(const optional<std::string>&,
+                         const std::string&,
+                         const style::conversion::Convertible&) override;
+
+    virtual PropertyMap getFeatureState(const optional<std::string>&,
+                                        const std::string&) const override;
+
     void reduceMemoryUse() override;
     void dumpDebugLogs() const override;
 
@@ -44,6 +52,7 @@ protected:
     mutable RenderTiles filteredRenderTiles;
     mutable RenderTiles renderTilesSortedByY;
     float bearing = 0.0f;      
+    SourceFeatureState featureState;
 };
 
 /**

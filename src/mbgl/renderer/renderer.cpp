@@ -109,6 +109,19 @@ FeatureExtensionValue Renderer::queryFeatureExtensions(const std::string& source
     return impl->orchestrator.queryFeatureExtensions(sourceID, feature, extension, extensionField, args);
 }
 
+void Renderer::setFeatureState(const std::string& sourceID,
+                               const optional<std::string>& sourceLayerID,
+                               const std::string& featureID,
+                               const style::conversion::Convertible& state) {
+    impl->orchestrator.setFeatureState(sourceID, sourceLayerID, featureID, state);
+}
+
+PropertyMap Renderer::getFeatureState(const std::string& sourceID,
+                                      const optional<std::string>& sourceLayerID,
+                                      const std::string& featureID) const {
+    return impl->orchestrator.getFeatureState(sourceID, sourceLayerID, featureID);
+}
+
 void Renderer::dumpDebugLogs() {
     impl->orchestrator.dumpDebugLogs();
 }

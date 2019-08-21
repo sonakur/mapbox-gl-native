@@ -93,6 +93,13 @@ public:
         return {};
     }
 
+    virtual void setFeatureState(const optional<std::string>&,
+                                const std::string&,
+                                const style::conversion::Convertible&) {}
+
+    virtual PropertyMap getFeatureState(const optional<std::string>&,
+                                        const std::string&) const { return PropertyMap(); }
+
     virtual void reduceMemoryUse() = 0;
 
     virtual void dumpDebugLogs() const = 0;
