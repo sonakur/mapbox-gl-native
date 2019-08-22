@@ -42,6 +42,10 @@ public:
     virtual PropertyMap getFeatureState(const optional<std::string>&,
                                         const std::string&) const override;
 
+    virtual void removeFeatureState(const optional<std::string>&,
+                                    const optional<std::string>&,
+                                    const optional<std::string>&) override;
+
     void reduceMemoryUse() override;
     void dumpDebugLogs() const override;
 

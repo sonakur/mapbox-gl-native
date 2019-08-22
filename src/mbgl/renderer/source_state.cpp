@@ -105,4 +105,46 @@ void SourceFeatureState::coalesceChanges(std::vector<RenderTile>& tiles) {
     }
 }
 
+void SourceFeatureState::removeState(const optional<std::string>& sourceLayerID, const optional<std::string>& featureID, const optional<std::string>& stateKey) {
+    std::string sourceLayer = sourceLayerID ? *sourceLayerID : "";
+
+    auto layerStates = state.find(sourceLayer);
+    if (layerStates != state.end()) {
+        if (featureID) {
+            auto featureStates = layerStates->second.find(*featureID);
+            if (featureStates != layerStates->second.end()) {
+                if (stateKey) {
+                    auto featureState = featureStates->second.find(*stateKey);
+                    if (featureState != featureStates->second.end()) {
+                        featureStates->second.erase(featureState);
+                    }
+                } else {
+                    layerStates->second.erase(featureStates);
+                }
+            }
+        } else {
+            state.erase(layerStates);
+        }
+    }
+
+    layerStates = stateChanges.find(sourceLayer);
+    if (layerStates != stateChanges.end()) {
+        if (featureID) {
+            auto featureStates = layerStates->second.find(*featureID);
+            if (featureStates != layerStates->second.end()) {
+                if (stateKey) {
+                    auto featureState = featureStates->second.find(*stateKey);
+                    if (featureState != featureStates->second.end()) {
+                        featureStates->second.erase(featureState);
+                    }
+                } else {
+                    layerStates->second.erase(featureStates);
+                }
+            }
+        } else {
+            stateChanges.erase(layerStates);
+        }
+    }
+}
+
 } // namespace mbgl

@@ -122,6 +122,13 @@ PropertyMap Renderer::getFeatureState(const std::string& sourceID,
     return impl->orchestrator.getFeatureState(sourceID, sourceLayerID, featureID);
 }
 
+void Renderer::removeFeatureState(const std::string& sourceID,
+                                  const optional<std::string>& sourceLayerID,
+                                  const optional<std::string>& featureID,
+                                  const optional<std::string>& stateKey) {
+    impl->orchestrator.removeFeatureState(sourceID, sourceLayerID, featureID, stateKey);
+}
+
 void Renderer::dumpDebugLogs() {
     impl->orchestrator.dumpDebugLogs();
 }

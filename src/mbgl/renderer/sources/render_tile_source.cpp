@@ -147,6 +147,12 @@ PropertyMap RenderTileSource::getFeatureState(const optional<std::string>& sourc
     return featureState.getState(sourceLayerID, featureID);
 }
 
+void RenderTileSource::removeFeatureState(const optional<std::string>& sourceLayerID,
+                                          const optional<std::string>& featureID,
+                                          const optional<std::string>& stateKey) {
+    featureState.removeState(sourceLayerID, featureID, stateKey);
+}
+
 void RenderTileSource::reduceMemoryUse() {
     tilePyramid.reduceMemoryUse();
 }

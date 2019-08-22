@@ -100,6 +100,10 @@ public:
     virtual PropertyMap getFeatureState(const optional<std::string>&,
                                         const std::string&) const { return PropertyMap(); }
 
+    virtual void removeFeatureState(const optional<std::string>&,
+                                    const optional<std::string>&,
+                                    const optional<std::string>&) {}
+
     virtual void reduceMemoryUse() = 0;
 
     virtual void dumpDebugLogs() const = 0;
