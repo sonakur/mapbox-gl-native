@@ -41,6 +41,7 @@ void RenderCustomGeometrySource::update(Immutable<style::Source::Impl> baseImpl_
                        util::tileSize,
                        impl().getZoomRange(),
                        {},
+                       featureState,
                        [&] (const OverscaledTileID& tileID) {
                            return std::make_unique<CustomGeometryTile>(tileID, impl().id, parameters, impl().getTileOptions(), *tileLoader);
                        });

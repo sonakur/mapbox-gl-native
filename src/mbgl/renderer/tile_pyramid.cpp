@@ -3,6 +3,7 @@
 #include <mbgl/renderer/render_source.hpp>
 #include <mbgl/renderer/tile_parameters.hpp>
 #include <mbgl/renderer/query.hpp>
+#include <mbgl/renderer/source_state.hpp>
 #include <mbgl/map/transform.hpp>
 #include <mbgl/math/clamp.hpp>
 #include <mbgl/util/tile_cover.hpp>
@@ -57,6 +58,7 @@ void TilePyramid::update(const std::vector<Immutable<style::LayerProperties>>& l
                          const uint16_t tileSize,
                          const Range<uint8_t> zoomRange,
                          optional<LatLngBounds> bounds,
+                         SourceFeatureState& featureState,
                          std::function<std::unique_ptr<Tile> (const OverscaledTileID&)> createTile) {
     // If we need a relayout, abandon any cached tiles; they're now stale.
     if (needsRelayout) {
@@ -161,6 +163,7 @@ void TilePyramid::update(const std::vector<Immutable<style::LayerProperties>>& l
     auto previouslyRenderedTiles = std::move(renderedTiles);
 
     auto renderTileFn = [&](const UnwrappedTileID& tileID, Tile& tile) {
+        featureState.initializeTileState(tile);
         addRenderTile(tileID, tile);
         previouslyRenderedTiles.erase(tileID); // Still rendering this tile, no need for special fading logic.
         tile.markRenderedIdeal();

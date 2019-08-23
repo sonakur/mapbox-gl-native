@@ -25,6 +25,7 @@ class RenderedQueryOptions;
 class SourceQueryOptions;
 class TileParameters;
 class SourcePrepareParameters;
+class SourceFeatureState;
 
 class TilePyramid {
 public:
@@ -41,6 +42,7 @@ public:
                 uint16_t tileSize,
                 Range<uint8_t> zoomRange,
                 optional<LatLngBounds> bounds,
+                SourceFeatureState& featureState,
                 std::function<std::unique_ptr<Tile> (const OverscaledTileID&)> createTile);
 
     const std::map<UnwrappedTileID, std::reference_wrapper<Tile>>& getRenderedTiles() const { return renderedTiles; }

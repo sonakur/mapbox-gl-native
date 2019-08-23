@@ -33,6 +33,7 @@ void RenderRasterSource::updateInternal(const Tileset& tileset,
                        impl().getTileSize(),
                        tileset.zoomRange,
                        tileset.bounds,
+                       featureState,
                        [&] (const OverscaledTileID& tileID) {
                            return std::make_unique<RasterTile>(tileID, parameters, tileset);
                        });

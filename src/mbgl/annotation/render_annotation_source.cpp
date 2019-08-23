@@ -2,6 +2,7 @@
 #include <mbgl/annotation/annotation_tile.hpp>
 #include <mbgl/renderer/render_tile.hpp>
 #include <mbgl/renderer/paint_parameters.hpp>
+#include <mbgl/renderer/source_state.hpp>
 
 #include <mbgl/layermanager/layer_manager.hpp>
 
@@ -38,6 +39,7 @@ void RenderAnnotationSource::update(Immutable<style::Source::Impl> baseImpl_,
                        // See https://github.com/mapbox/mapbox-gl-native/issues/10197
                        { 0, 16 },
                        optional<LatLngBounds> {},
+                       featureState,
                        [&] (const OverscaledTileID& tileID) {
                            return std::make_unique<AnnotationTile>(tileID, parameters);
                        });
