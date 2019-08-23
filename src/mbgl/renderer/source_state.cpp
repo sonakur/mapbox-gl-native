@@ -1,6 +1,7 @@
 #include <mbgl/renderer/source_state.hpp>
 #include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/renderer/render_tile.hpp>
+#include <mbgl/tile/tile.hpp>
 #include <mbgl/util/logging.hpp>
 
 namespace mbgl {
@@ -73,6 +74,10 @@ PropertyMap SourceFeatureState::getState(const optional<std::string>& sourceLaye
     PropertyMap& result = changes;
     result.insert(base.begin(), base.end());
     return result;
+}
+
+void SourceFeatureState::initializeTileState(Tile &tile) {
+    tile.setFeatureState(state);
 }
 
 void SourceFeatureState::initializeTileState(RenderTile &tile) {

@@ -17,6 +17,7 @@ public:
     void updateState(const optional<std::string>& sourceLayerID, const std::string& featureID, const Convertible& newState);
     PropertyMap getState(const optional<std::string>& sourceLayerID, const std::string& featureID) const;
 
+    void initializeTileState(Tile &tile);
     void initializeTileState(RenderTile &tile);
     void coalesceChanges(std::vector<RenderTile>& tiles);
 
