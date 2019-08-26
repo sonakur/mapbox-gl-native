@@ -15,6 +15,7 @@
 #include <mbgl/util/run_loop.hpp>
 #include <mbgl/util/string.hpp>
 #include <mbgl/util/timer.hpp>
+#include <mbgl/renderer/renderer.hpp>
 
 #include <mapbox/pixelmatch.hpp>
 
@@ -197,6 +198,9 @@ bool TestRunner::runOperations(const std::string& key, TestMetadata& metadata) {
     static const std::string memoryProbeOp("probeMemory");
     static const std::string memoryProbeStartOp("probeMemoryStart");
     static const std::string memoryProbeEndOp("probeMemoryEnd");
+    static const std::string setFeatureStateOp("setFeatureState");
+    static const std::string getFeatureStateOp("getFeatureState");
+    static const std::string removeFeatureStateOp("removeFeatureState");
 
     // wait
     if (operationArray[0].GetString() == waitOp) {
@@ -453,6 +457,96 @@ bool TestRunner::runOperations(const std::string& key, TestMetadata& metadata) {
         assert(AllocationIndex::isActive());
         AllocationIndex::setActive(false);
         AllocationIndex::reset();
+
+    // setFeatureState
+    } else if (operationArray[0].GetString() == setFeatureStateOp) {
+        assert(operationArray.Size() >= 3u);
+        assert(operationArray[1].IsObject());
+        assert(operationArray[2].IsObject());
+
+        std::string sourceID;
+        mbgl::optional<std::string> sourceLayer;
+        std::string featureID;
+
+        const auto& featureOptions = operationArray[1].GetObject();
+        if (featureOptions.HasMember("source")) {
+            sourceID = featureOptions["source"].GetString();
+        }
+        if (featureOptions.HasMember("sourceLayer")) {
+            sourceLayer = { featureOptions["sourceLayer"].GetString() };
+        }
+        if (featureOptions.HasMember("id")) {
+            featureID = featureOptions["id"].GetString();
+        }
+        const mbgl::JSValue* state = &operationArray[2];
+
+        try {
+            frontend.render(map);
+        } catch (const std::exception&) {
+            return false;
+        }
+        frontend.getRenderer()->setFeatureState(sourceID, sourceLayer, featureID, state);
+
+    // getFeatureState
+    } else if (operationArray[0].GetString() == getFeatureStateOp) {
+        assert(operationArray.Size() >= 2u);
+        assert(operationArray[1].IsObject());
+
+        std::string sourceID;
+        mbgl::optional<std::string> sourceLayer;
+        std::string featureID;
+
+        const auto& featureOptions = operationArray[1].GetObject();
+        if (featureOptions.HasMember("source")) {
+            sourceID = featureOptions["source"].GetString();
+        }
+        if (featureOptions.HasMember("sourceLayer")) {
+            sourceLayer = { featureOptions["sourceLayer"].GetString() };
+        }
+        if (featureOptions.HasMember("id")) {
+            featureID = featureOptions["id"].GetString();
+        }
+
+        try {
+            frontend.render(map);
+        } catch (const std::exception&) {
+            return false;
+        }
+        auto state = frontend.getRenderer()->getFeatureState(sourceID, sourceLayer, featureID);
+
+    // removeFeatureState
+    } else if (operationArray[0].GetString() == removeFeatureStateOp) {
+        assert(operationArray.Size() >= 2u);
+        assert(operationArray[1].IsObject());
+
+        std::string sourceID;
+        mbgl::optional<std::string> sourceLayer;
+        std::string featureID;
+        mbgl::optional<std::string> stateKey;
+
+        const auto& featureOptions = operationArray[1].GetObject();
+        if (featureOptions.HasMember("source")) {
+            sourceID = featureOptions["source"].GetString();
+        }
+        if (featureOptions.HasMember("sourceLayer")) {
+            sourceLayer = { featureOptions["sourceLayer"].GetString() };
+        }
+        if (featureOptions.HasMember("id")) {
+            featureID = featureOptions["id"].GetString();
+        }
+
+        if (operationArray.Size() >= 3u) {
+            assert(operationArray[2].IsString());
+            stateKey = { operationArray[2].GetString() };
+        }
+
+        try {
+            frontend.render(map);
+        } catch (const std::exception&) {
+            return false;
+        }
+        frontend.getRenderer()->removeFeatureState(sourceID, sourceLayer, featureID, stateKey);
+
     } else {
         metadata.errorMessage = std::string("Unsupported operation: ")  + operationArray[0].GetString();
         return false;
