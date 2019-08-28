@@ -117,6 +117,9 @@ ParseError)JS").ToLocalChecked()).ToLocalChecked();
     Nan::SetPrototypeMethod(tpl, "setAxonometric", SetAxonometric);
     Nan::SetPrototypeMethod(tpl, "setXSkew", SetXSkew);
     Nan::SetPrototypeMethod(tpl, "setYSkew", SetYSkew);
+    Nan::SetPrototypeMethod(tpl, "setFeatureState", SetFeatureState);
+    Nan::SetPrototypeMethod(tpl, "getFeatureState", GetFeatureState);
+    Nan::SetPrototypeMethod(tpl, "removeFeatureState", RemoveFeatureState);
 
     Nan::SetPrototypeMethod(tpl, "dumpDebugLogs", DumpDebugLogs);
     Nan::SetPrototypeMethod(tpl, "queryRenderedFeatures", QueryRenderedFeatures);
@@ -1092,6 +1095,175 @@ void NodeMap::SetYSkew(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     try {
         nodeMap->map->setProjectionMode(mbgl::ProjectionMode()
                                         .withYSkew(info[0]->NumberValue()));
+    } catch (const std::exception &ex) {
+        return Nan::ThrowError(ex.what());
+    }
+
+    info.GetReturnValue().SetUndefined();
+}
+
+void NodeMap::SetFeatureState(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+    using namespace mbgl::style::conversion;
+
+    auto nodeMap = Nan::ObjectWrap::Unwrap<NodeMap>(info.Holder());
+    if (!nodeMap->map) return Nan::ThrowError(releasedMessage());
+
+    if (info.Length() < 2) {
+        return Nan::ThrowTypeError("Two arguments required");
+    }
+
+    if (!info[0]->IsObject() || !info[1]->IsObject()) {
+        return Nan::ThrowTypeError("Both arguments must be objects");
+    }
+
+    std::string sourceID, featureID;
+    mbgl::optional<std::string> sourceLayerID;
+    auto feature = Nan::To<v8::Object>(info[0]).ToLocalChecked();
+    if (Nan::Has(feature, Nan::New("source").ToLocalChecked()).FromJust()) {
+        auto sourceOption = Nan::Get(feature, Nan::New("source").ToLocalChecked()).ToLocalChecked();
+        if (!sourceOption->IsString()) {
+            return Nan::ThrowTypeError("Requires feature.source property to be a string");
+        }
+        sourceID = *Nan::Utf8String(sourceOption);
+    } else {
+        return Nan::ThrowTypeError("SetFeatureState: Requires feature.source property");
+    }
+
+    if (Nan::Has(feature, Nan::New("sourceLayer").ToLocalChecked()).FromJust()) {
+        auto sourceLayerOption = Nan::Get(feature, Nan::New("sourceLayer").ToLocalChecked()).ToLocalChecked();
+        if (!sourceLayerOption->IsString()) {
+            return Nan::ThrowTypeError("SetFeatureState: Requires feature.sourceLayer property to be a string");
+        }
+        sourceLayerID = { *Nan::Utf8String(sourceLayerOption) };
+    }
+
+    if (Nan::Has(feature, Nan::New("id").ToLocalChecked()).FromJust()) {
+        auto idOption = Nan::Get(feature, Nan::New("id").ToLocalChecked()).ToLocalChecked();
+        if (!idOption->IsString() && !(idOption->IsNumber() || idOption->IsString())) {
+            return Nan::ThrowTypeError("Requires feature.id property to be a string or a number");
+        }
+        featureID = *Nan::Utf8String(idOption);
+    } else {
+        return Nan::ThrowTypeError("SetFeatureState: Requires feature.id property");
+    }
+
+    Convertible state(info[1]);
+    try {
+        nodeMap->frontend->getRenderer()->setFeatureState(sourceID, sourceLayerID, featureID, state);
+    } catch (const std::exception &ex) {
+        return Nan::ThrowError(ex.what());
+    }
+
+    info.GetReturnValue().SetUndefined();
+}
+
+void NodeMap::GetFeatureState(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+    auto nodeMap = Nan::ObjectWrap::Unwrap<NodeMap>(info.Holder());
+    if (!nodeMap->map) return Nan::ThrowError(releasedMessage());
+
+    if (info.Length() < 1) {
+        return Nan::ThrowTypeError("One argument required");
+    }
+
+    if (!info[0]->IsObject() || !info[1]->IsObject()) {
+        return Nan::ThrowTypeError("Argument must be object");
+    }
+
+    std::string sourceID, featureID;
+    mbgl::optional<std::string> sourceLayerID;
+    auto feature = Nan::To<v8::Object>(info[0]).ToLocalChecked();
+    if (Nan::Has(feature, Nan::New("source").ToLocalChecked()).FromJust()) {
+        auto sourceOption = Nan::Get(feature, Nan::New("source").ToLocalChecked()).ToLocalChecked();
+        if (!sourceOption->IsString()) {
+            return Nan::ThrowTypeError("Requires feature.source property to be a string");
+        }
+        sourceID = *Nan::Utf8String(sourceOption);
+    } else {
+        return Nan::ThrowTypeError("GetFeatureState: Requires feature.source property");
+    }
+
+    if (Nan::Has(feature, Nan::New("sourceLayer").ToLocalChecked()).FromJust()) {
+        auto sourceLayerOption = Nan::Get(feature, Nan::New("sourceLayer").ToLocalChecked()).ToLocalChecked();
+        if (!sourceLayerOption->IsString()) {
+            return Nan::ThrowTypeError("GetFeatureState: Requires feature.sourceLayer property to be a string");
+        }
+        sourceLayerID = { *Nan::Utf8String(sourceLayerOption) };
+    }
+
+    if (Nan::Has(feature, Nan::New("id").ToLocalChecked()).FromJust()) {
+        auto idOption = Nan::Get(feature, Nan::New("id").ToLocalChecked()).ToLocalChecked();
+        if (!idOption->IsString() && !(idOption->IsNumber() || idOption->IsString())) {
+            return Nan::ThrowTypeError("Requires feature.id property to be a string or a number");
+        }
+        featureID = *Nan::Utf8String(idOption);
+    } else {
+        return Nan::ThrowTypeError("GetFeatureState: Requires feature.id property");
+    }
+
+    try {
+        nodeMap->frontend->getRenderer()->getFeatureState(sourceID, sourceLayerID, featureID);
+    } catch (const std::exception &ex) {
+        return Nan::ThrowError(ex.what());
+    }
+
+    info.GetReturnValue().SetUndefined();
+}
+
+void NodeMap::RemoveFeatureState(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+    auto nodeMap = Nan::ObjectWrap::Unwrap<NodeMap>(info.Holder());
+    if (!nodeMap->map) return Nan::ThrowError(releasedMessage());
+
+    if (info.Length() < 1) {
+        return Nan::ThrowTypeError("At least one argument required");
+    }
+
+    if (!info[0]->IsObject()) {
+        return Nan::ThrowTypeError("Argument 1 must be object");
+    }
+
+    if (info.Length() == 2 && !info[1]->IsString()) {
+        return Nan::ThrowTypeError("argument 2 must be string");
+    }
+
+    std::string sourceID;
+    mbgl::optional<std::string> sourceLayerID, featureID, stateKey;
+    auto feature = Nan::To<v8::Object>(info[0]).ToLocalChecked();
+    if (Nan::Has(feature, Nan::New("source").ToLocalChecked()).FromJust()) {
+        auto sourceOption = Nan::Get(feature, Nan::New("source").ToLocalChecked()).ToLocalChecked();
+        if (!sourceOption->IsString()) {
+            return Nan::ThrowTypeError("Requires feature.source property to be a string");
+        }
+        sourceID = *Nan::Utf8String(sourceOption);
+    } else {
+        return Nan::ThrowTypeError("RemoveFeatureState: Requires feature.source property");
+    }
+
+    if (Nan::Has(feature, Nan::New("sourceLayer").ToLocalChecked()).FromJust()) {
+        auto sourceLayerOption = Nan::Get(feature, Nan::New("sourceLayer").ToLocalChecked()).ToLocalChecked();
+        if (!sourceLayerOption->IsString()) {
+            return Nan::ThrowTypeError("RemoveFeatureState: Requires feature.sourceLayer property to be a string");
+        }
+        sourceLayerID = { *Nan::Utf8String(sourceLayerOption) };
+    }
+
+    if (Nan::Has(feature, Nan::New("id").ToLocalChecked()).FromJust()) {
+        auto idOption = Nan::Get(feature, Nan::New("id").ToLocalChecked()).ToLocalChecked();
+        if (!idOption->IsString() && !(idOption->IsNumber() || idOption->IsString())) {
+            return Nan::ThrowTypeError("Requires feature.id property to be a string or a number");
+        }
+        featureID = { *Nan::Utf8String(idOption) };
+    }
+
+    if (info.Length() == 2) {
+        auto keyParam = Nan::To<v8::String>(info[1]).ToLocalChecked();
+        if (!keyParam->IsString()) {
+            return Nan::ThrowTypeError("RemoveFeatureState: Requires feature key property to be a string");
+        }
+        stateKey = { *Nan::Utf8String(keyParam) };
+    }
+
+    try {
+        nodeMap->frontend->getRenderer()->removeFeatureState(sourceID, sourceLayerID, featureID, stateKey);
     } catch (const std::exception &ex) {
         return Nan::ThrowError(ex.what());
     }
