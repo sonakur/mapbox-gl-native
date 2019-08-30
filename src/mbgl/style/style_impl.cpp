@@ -139,9 +139,9 @@ void Style::Impl::addSource(std::unique_ptr<Source> source) {
         throw std::runtime_error(msg.c_str());
     }
 
-    source->loadDescription(fileSource);
-    source->setObserver(this);
-    sources.add(std::move(source));
+    auto item = sources.add(std::move(source));
+    item->setObserver(this);
+    item->loadDescription(fileSource);
 }
 
 std::unique_ptr<Source> Style::Impl::removeSource(const std::string& id) {
