@@ -70,6 +70,25 @@ MGL_EXPORT
  */
 @property (nonatomic) CGFloat scale;
 
+/**
+ TODO: Docs
+ */
+@property (nonatomic, nullable) NSArray<UIImage *> *overlayImages; // should be array of MGLMapSnapShotOverlay
+
+@end
+
+/**
+ TODO: Docs
+ */
+MGL_EXPORT
+@interface MGLMapSnapShotOverlay : NSObject
+
+@property (nonatomic) UIImage *overlayImage;
+@property (nonatomic) CGBlendMode blendMode;
+@property (nonatomic) CGFloat alpha;
+
+- (instancetype)initWithImage:(UIImage *)image blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha NS_DESIGNATED_INITIALIZER;
+
 @end
 
 /**

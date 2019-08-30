@@ -122,6 +122,23 @@ const CGFloat MGLSnapshotterMinimumPixelSize = 64;
 + (void)completeWithErrorCode:(MGLErrorCode)errorCode description:(nonnull NSString*)description onQueue:(dispatch_queue_t)queue completion:(MGLMapSnapshotCompletionHandler)completion;
 @end
 
+@implementation MGLMapSnapShotOverlay
+
+- (instancetype)initWithImage:(UIImage *)image blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha
+{
+    MGLLogDebug(@"Initializing MGLSnapSnapShotOverlay with image: %@, blend mode: %@, alpha: %@", image, blendMode, alpha);
+
+    if (self = [super init]) {
+        _overlayImage = image;
+        _blendMode = blendMode;
+        _alpha = alpha;
+    }
+
+    return self;
+}
+
+@end
+
 @implementation MGLMapSnapshotter {
     std::unique_ptr<mbgl::MapSnapshotter> _mbglMapSnapshotter;
     std::unique_ptr<mbgl::Actor<mbgl::MapSnapshotter::Callback>> _snapshotCallback;
@@ -238,7 +255,7 @@ const CGFloat MGLSnapshotterMinimumPixelSize = 64;
             mglImage.size = NSMakeSize(mglImage.size.width / strongSelf.options.scale,
                                        mglImage.size.height / strongSelf.options.scale);
 #endif
-            [strongSelf drawAttributedSnapshot:attributions snapshotImage:mglImage pointForFn:pointForFn latLngForFn:latLngForFn];
+            [strongSelf drawAttributedSnapshot:attributions snapshotImage:mglImage pointForFn:pointForFn latLngForFn:latLngForFn overlayImages:self.options.overlayImages];
         }
         strongSelf->_snapshotCallback = NULL;
 
@@ -250,7 +267,7 @@ const CGFloat MGLSnapshotterMinimumPixelSize = 64;
     _mbglMapSnapshotter->snapshot(_snapshotCallback->self());
 }
 
-+ (MGLImage*)drawAttributedSnapshotWorker:(mbgl::MapSnapshotter::Attributions)attributions snapshotImage:(MGLImage *)mglImage pointForFn:(mbgl::MapSnapshotter::PointForFn)pointForFn latLngForFn:(mbgl::MapSnapshotter::LatLngForFn)latLngForFn scale:(CGFloat)scale size:(CGSize)size {
++ (MGLImage*)drawAttributedSnapshotWorker:(mbgl::MapSnapshotter::Attributions)attributions snapshotImage:(MGLImage *)mglImage pointForFn:(mbgl::MapSnapshotter::PointForFn)pointForFn latLngForFn:(mbgl::MapSnapshotter::LatLngForFn)latLngForFn scale:(CGFloat)scale size:(CGSize)size overlayImages:(NSArray<UIImage *>*) overlayImages{
 
     NSArray<MGLAttributionInfo *>* attributionInfo = [MGLMapSnapshotter generateAttributionInfos:attributions];
 
@@ -287,11 +304,16 @@ const CGFloat MGLSnapshotterMinimumPixelSize = 64;
                                  attributionBackgroundFrame.origin.y * mglImage.scale,
                                  attributionBackgroundSize.width * mglImage.scale,
                                  attributionBackgroundSize.height * mglImage.scale);
-    
-    
+
     UIGraphicsBeginImageContextWithOptions(mglImage.size, NO, scale);
-    
+
     [mglImage drawInRect:CGRectMake(0, 0, mglImage.size.width, mglImage.size.height)];
+
+    if (overlayImages) {
+        for (MGLMapSnapShotOverlay *overlay in overlayImages) {
+            [overlay.overlayImage drawInRect:CGRectMake(0, 0, overlay.overlayImage.size.width, overlay.overlayImage.size.width) blendMode:overlay.blendMode alpha:overlay.alpha];
+        }
+    }
     
     [logoImage drawInRect:logoImageRect];
     
@@ -379,7 +401,7 @@ const CGFloat MGLSnapshotterMinimumPixelSize = 64;
 #endif
 }
 
-- (void)drawAttributedSnapshot:(mbgl::MapSnapshotter::Attributions)attributions snapshotImage:(MGLImage *)mglImage pointForFn:(mbgl::MapSnapshotter::PointForFn)pointForFn latLngForFn:(mbgl::MapSnapshotter::LatLngForFn)latLngForFn {
+- (void)drawAttributedSnapshot:(mbgl::MapSnapshotter::Attributions)attributions snapshotImage:(MGLImage *)mglImage pointForFn:(mbgl::MapSnapshotter::PointForFn)pointForFn latLngForFn:(mbgl::MapSnapshotter::LatLngForFn)latLngForFn overlayImages:(NSArray<UIImage *>*) overlayImages {
     
     // Process image watermark in a work queue
     dispatch_queue_t workQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
@@ -389,12 +411,14 @@ const CGFloat MGLSnapshotterMinimumPixelSize = 64;
     CGFloat scale = self.options.scale;
     CGSize size = self.options.size;
 
+    NSArray<UIImage *> *images = self.options.overlayImages;
+
     // pointForFn is a copyable std::function that captures state by value: see MapSnapshotter::Impl::snapshot
     __weak __typeof__(self) weakself = self;
 
     dispatch_async(workQueue, ^{
         // Call a class method to ensure we're not accidentally capturing self
-        MGLImage *compositedImage = [MGLMapSnapshotter drawAttributedSnapshotWorker:attributions snapshotImage:mglImage pointForFn:pointForFn latLngForFn:latLngForFn scale:scale size:size];
+        MGLImage *compositedImage = [MGLMapSnapshotter drawAttributedSnapshotWorker:attributions snapshotImage:mglImage pointForFn:pointForFn latLngForFn:latLngForFn scale:scale size:size overlayImages:images];
 
         // Dispatch result to origin queue
         dispatch_async(resultQueue, ^{
