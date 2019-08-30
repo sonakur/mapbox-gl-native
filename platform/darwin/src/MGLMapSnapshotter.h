@@ -6,6 +6,51 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
+ An object representing an overlay image to draw on top of the map snapshot but below the snapshot's
+ attribution.
+ */
+MGL_EXPORT
+@interface MGLMapSnapShotOverlay : NSObject
+
+/**
+ The image to be used for the overlay.
+ */
+@property (nonatomic) UIImage *image;
+
+/**
+ The position at which to place the upper left corner of the overlay, relative to
+ the coordinate system of the frame of the snapshot image.
+ */
+@property (nonatomic) CGPoint position;
+
+/**
+ Scales the original size of the overlay image by the provided factor. The new point size
+ of the image will be the original point size multiplied by this value. Defaults to `1`.
+ */
+@property (nonatomic) CGFloat scale;
+
+/**
+ The blend mode to use when applying the image overlay. Defaults to `kCGBlendModeNormal`.
+ */
+@property (nonatomic) CGBlendMode blendMode;
+
+/**
+ The opacity at which to render the overlay. Defaults to `1.0`.
+ */
+@property (nonatomic) CGFloat alpha;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+/**
+ @param image The `UIImage` to be used for the overlay.
+ @param position The position at which to place the upper left corner of the overlay, relative to
+ the coordinate system of the frame of the snapshot image.
+ */
+- (instancetype)initWithImage:(UIImage *)image position:(CGPoint)position NS_DESIGNATED_INITIALIZER;
+
+@end
+
+/**
  The options to use when creating images with the `MGLMapSnapshotter`.
  */
 MGL_EXPORT
@@ -71,23 +116,10 @@ MGL_EXPORT
 @property (nonatomic) CGFloat scale;
 
 /**
- TODO: Docs
+ An optional array of `MGLMapSnapShotOverlay` objects to draw on top of the snapshot but
+ below the snapshot's attribution.
  */
-@property (nonatomic, nullable) NSArray<UIImage *> *overlayImages; // should be array of MGLMapSnapShotOverlay
-
-@end
-
-/**
- TODO: Docs
- */
-MGL_EXPORT
-@interface MGLMapSnapShotOverlay : NSObject
-
-@property (nonatomic) UIImage *overlayImage;
-@property (nonatomic) CGBlendMode blendMode;
-@property (nonatomic) CGFloat alpha;
-
-- (instancetype)initWithImage:(UIImage *)image blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha NS_DESIGNATED_INITIALIZER;
+@property (nonatomic, nullable) NSArray<MGLMapSnapShotOverlay *> *overlayImages;
 
 @end
 
