@@ -22,6 +22,7 @@
 		07D8C6FB1F67560100381808 /* MGLComputedShapeSource.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0778DD411F67555F00A73B34 /* MGLComputedShapeSource.mm */; };
 		07D8C6FF1F67562C00381808 /* MGLComputedShapeSourceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D8C6FD1F67562800381808 /* MGLComputedShapeSourceTests.m */; };
 		07D947531F67488E00E37934 /* MGLComputedShapeSource_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 07D9474E1F67487E00E37934 /* MGLComputedShapeSource_Private.h */; };
+		07F699162317329B008D6997 /* MBXContextSnapshotViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07F699152317329B008D6997 /* MBXContextSnapshotViewController.m */; };
 		16376B0A1FFD9DAF0000563E /* MBGLIntegrationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16376B091FFD9DAF0000563E /* MBGLIntegrationTests.mm */; };
 		16376B331FFDB4B40000563E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 16376B321FFDB4B40000563E /* AppDelegate.m */; };
 		16376B3B1FFDB4B40000563E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 16376B3A1FFDB4B40000563E /* Assets.xcassets */; };
@@ -879,6 +880,8 @@
 		0778DD411F67555F00A73B34 /* MGLComputedShapeSource.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MGLComputedShapeSource.mm; sourceTree = "<group>"; };
 		07D8C6FD1F67562800381808 /* MGLComputedShapeSourceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MGLComputedShapeSourceTests.m; path = ../../darwin/test/MGLComputedShapeSourceTests.m; sourceTree = "<group>"; };
 		07D9474E1F67487E00E37934 /* MGLComputedShapeSource_Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MGLComputedShapeSource_Private.h; sourceTree = "<group>"; };
+		07F699142317329B008D6997 /* MBXContextSnapshotViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MBXContextSnapshotViewController.h; sourceTree = "<group>"; };
+		07F699152317329B008D6997 /* MBXContextSnapshotViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MBXContextSnapshotViewController.m; sourceTree = "<group>"; };
 		16376B071FFD9DAF0000563E /* integration.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = integration.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		16376B091FFD9DAF0000563E /* MBGLIntegrationTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MBGLIntegrationTests.mm; sourceTree = "<group>"; };
 		16376B0B1FFD9DAF0000563E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1937,6 +1940,8 @@
 		DA1DC9411CB6C1C2006E619F = {
 			isa = PBXGroup;
 			children = (
+				07F699142317329B008D6997 /* MBXContextSnapshotViewController.h */,
+				07F699152317329B008D6997 /* MBXContextSnapshotViewController.m */,
 				402E9DE21CD3A56500FD4519 /* Playground */,
 				DA1DC94C1CB6C1C2006E619F /* Demo App */,
 				DABCABA91CB80692000A7C39 /* Benchmarking App */,
@@ -3232,6 +3237,7 @@
 				DA1DC96B1CB6C6B7006E619F /* MBXOfflinePacksTableViewController.m in Sources */,
 				075AF845227B67C6008D7A4C /* MBXStateManager.m in Sources */,
 				DA1DC96A1CB6C6B7006E619F /* MBXCustomCalloutView.m in Sources */,
+				07F699162317329B008D6997 /* MBXContextSnapshotViewController.m in Sources */,
 				075AF842227B6762008D7A4C /* MBXState.m in Sources */,
 				927FBCFC1F4DAA8300F8BF1F /* MBXSnapshotsViewController.m in Sources */,
 				DA1DC99B1CB6E064006E619F /* MBXViewController.m in Sources */,
