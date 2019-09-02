@@ -3,6 +3,7 @@
 * Fixed rendering and collision detection issues with using `text-variable-anchor` and `icon-text-fit` properties on the same layer ([#15367](https://github.com/mapbox/mapbox-gl-native/pull/15367)).
 * Fixed a rendering issue that non-SDF icon would be treated as SDF icon if they are in the same layer. ([#15456](https://github.com/mapbox/mapbox-gl-native/pull/15456))
 * Fixed a rendering issue of `collisionBox` when `text-translate` or `icon-translate` is enabled. ([#15467](https://github.com/mapbox/mapbox-gl-native/pull/15467))
+* Add support for feature state APIs. ([#15480](https://github.com/mapbox/mapbox-gl-native/pull/15480))
 
 # 4.2.0
 - Add an option to set whether or not an image should be treated as a SDF ([#15054](https://github.com/mapbox/mapbox-gl-native/issues/15054))
