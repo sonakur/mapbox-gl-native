@@ -67,12 +67,3 @@
    fun:_ZN6mapbox10pixelmatchEPKhS1_mmPhdb
    ...
 }
-{
-   util::write_file
-   Memcheck:Param
-   write(buf)
-   ...
-   obj:*/libc-*
-   fun:_ZN4mbgl4util10write_fileERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_
-   ...
-}

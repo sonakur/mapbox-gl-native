@@ -28,10 +28,6 @@ namespace mbgl {
 class Response;
 class TileID;
 
-namespace util {
-struct IOException;
-} // namespace util
-
 struct MapboxTileLimitExceededException :  util::Exception {
     MapboxTileLimitExceededException() : util::Exception("Mapbox tile limit exceeded") {}
 };
@@ -97,7 +93,7 @@ public:
 private:
     void initialize();
     void handleError(const mapbox::sqlite::Exception&, const char* action);
-    void handleError(const util::IOException&, const char* action);
+    void handleError(const std::string&, const char* action);
 
     void removeExisting();
     void removeOldCacheTable();

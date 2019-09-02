@@ -12,7 +12,7 @@
 #include <mbgl/gl/attribute.hpp>
 #include <mbgl/gl/uniform.hpp>
 #include <mbgl/gl/texture.hpp>
-#include <mbgl/util/io.hpp>
+#include <mapbox/io.hpp>
 
 #include <mbgl/util/logging.hpp>
 #include <mbgl/programs/program_parameters.hpp>

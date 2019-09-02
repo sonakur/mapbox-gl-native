@@ -73,7 +73,7 @@ TEST(VectorTile, Issue8542) {
 }
 
 TEST(VectorTileData, ParseResults) {
-    VectorTileData data(std::make_shared<std::string>(util::read_file("test/fixtures/map/issue12432/0-0-0.mvt")));
+    VectorTileData data(std::make_shared<std::string>(*mapbox::base::readFile("test/fixtures/map/issue12432/0-0-0.mvt")));
 
     std::vector<std::string> layerNames = data.layerNames();
     ASSERT_EQ(layerNames.size(), 2u);

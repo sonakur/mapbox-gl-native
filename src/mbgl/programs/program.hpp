@@ -8,7 +8,7 @@
 #include <mbgl/programs/program_parameters.hpp>
 #include <mbgl/style/paint_property.hpp>
 #include <mbgl/renderer/paint_property_binder.hpp>
-#include <mbgl/util/io.hpp>
+#include <mapbox/io.hpp>
 
 #include <unordered_map>
 

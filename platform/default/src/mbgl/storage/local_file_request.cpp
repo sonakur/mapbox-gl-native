@@ -1,6 +1,7 @@
 #include <mbgl/storage/file_source_request.hpp>
 #include <mbgl/storage/response.hpp>
-#include <mbgl/util/io.hpp>
+
+#include <mapbox/io.hpp>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,11 +22,9 @@ void requestLocalFile(const std::string& path, ActorRef<FileSourceRequest> req) 
     } else if (result == -1 && errno == ENOENT) {
         response.error = std::make_unique<Response::Error>(Response::Error::Reason::NotFound);
     } else {
-        auto data = util::readFile(path);
+        auto data = mapbox::base::readFile(path);
         if (!data) {
-            response.error = std::make_unique<Response::Error>(
-                Response::Error::Reason::Other,
-                std::string("Cannot read file ") + path);
+            response.error = std::make_unique<Response::Error>(Response::Error::Reason::Other, data.error());
         } else {
             response.data = std::make_shared<std::string>(std::move(*data));
         }

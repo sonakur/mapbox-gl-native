@@ -1,6 +1,6 @@
 #include "qmapboxgl.test.hpp"
 
-#include <mbgl/util/io.hpp>
+#include <mapbox/io.hpp>
 
 #include <QMapbox>
 
@@ -44,7 +44,7 @@ void QMapboxGLTest::onNeedsRendering() {
 
 TEST_F(QMapboxGLTest, TEST_DISABLED_ON_CI(styleJson)) {
     QString json = QString::fromStdString(
-        mbgl::util::read_file("test/fixtures/resources/style_vector.json"));
+        *mapbox::base::readFile("test/fixtures/resources/style_vector.json"));
 
     map.setStyleJson(json);
     ASSERT_EQ(map.styleJson(), json);

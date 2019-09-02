@@ -31,7 +31,6 @@ target_link_libraries(mbgl-core PUBLIC
     ${ICU_LIBRARY}
     polylabel
     protozero
-    Mapbox::Base::Extras::rapidjson
     vector-tile
 )
 

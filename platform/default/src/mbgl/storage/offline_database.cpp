@@ -2,10 +2,11 @@
 #include <mbgl/storage/response.hpp>
 #include <mbgl/storage/sqlite3.hpp>
 #include <mbgl/util/compression.hpp>
-#include <mbgl/util/io.hpp>
 #include <mbgl/util/string.hpp>
 #include <mbgl/util/chrono.hpp>
 #include <mbgl/util/logging.hpp>
+
+#include <mapbox/io.hpp>
 
 #include <mbgl/storage/offline_schema.hpp>
 #include <mbgl/storage/merge_sideloaded.hpp>
@@ -17,8 +18,6 @@ OfflineDatabase::OfflineDatabase(std::string path_)
     : path(std::move(path_)) {
     try {
         initialize();
-    } catch (const util::IOException& ex) {
-        handleError(ex, "open database");
     } catch (const mapbox::sqlite::Exception& ex) {
         handleError(ex, "open database");
     }
@@ -80,8 +79,6 @@ void OfflineDatabase::cleanup() {
     try {
         statements.clear();
         db.reset();
-    } catch (const util::IOException& ex) {
-        handleError(ex, "close database");
     } catch (const mapbox::sqlite::Exception& ex) {
         handleError(ex, "close database");
     }
@@ -108,20 +105,17 @@ void OfflineDatabase::handleError(const mapbox::sqlite::Exception& ex, const cha
         // The database was corruped, moved away, or deleted. We're going to start fresh with a
         // clean slate for the next operation.
         Log::Error(Event::Database, static_cast<int>(ex.code), "Can't %s: %s", action, ex.what());
-        try {
-            removeExisting();
-        } catch (const util::IOException& ioEx) {
-            handleError(ioEx, action);
-        }
+        removeExisting();
+
     } else {
         // We treat the error as temporary, and pretend we have an inaccessible DB.
         Log::Warning(Event::Database, static_cast<int>(ex.code), "Can't %s: %s", action, ex.what());
     }
 }
 
-void OfflineDatabase::handleError(const util::IOException& ex, const char* action) {
+void OfflineDatabase::handleError(const std::string& error, const char* action) {
     // We failed to delete the database file.
-    Log::Error(Event::Database, ex.code, "Can't %s: %s", action, ex.what());
+    Log::Error(Event::Database, 1, "Can't %s: %s", action, error.c_str());
 }
 
 void OfflineDatabase::removeExisting() {
@@ -130,7 +124,10 @@ void OfflineDatabase::removeExisting() {
     statements.clear();
     db.reset();
 
-    util::deleteFile(path);
+    auto op = mapbox::base::deleteFile(path);
+    if (!op) {
+        handleError(op.error(), "remove existing database");
+    }
 }
 
 void OfflineDatabase::removeOldCacheTable() {
@@ -195,9 +192,6 @@ optional<Response> OfflineDatabase::get(const Resource& resource) try {
 
     auto result = getInternal(resource);
     return result ? optional<Response>{ result->first } : nullopt;
-} catch (const util::IOException& ex) {
-    handleError(ex, "read resource");
-    return nullopt;
 } catch (const mapbox::sqlite::Exception& ex) {
     handleError(ex, "read resource");
     return nullopt;
