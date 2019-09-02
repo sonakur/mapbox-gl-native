@@ -4,8 +4,11 @@ workflows:
   version: 2
   default:
     jobs:
+      - clang-checks
       - build-template-linux:
           name: android-armeabi-v7a-release
+          requires:
+            - clang-checks
           config_params: '-G Ninja -DCMAKE_TOOLCHAIN_FILE=/opt/android/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_CCACHE=ccache -DANDROID_ABI=armeabi-v7a'
       - build-template-linux:
           name: android-arm64-v8a-release
@@ -24,6 +27,8 @@ workflows:
           config_params: '-G Ninja -DCMAKE_TOOLCHAIN_FILE=/opt/android/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_CCACHE=ccache -DANDROID_ABI=x86_64'
       - build-template-linux:
           name: linux-gcc8-release
+          requires:
+            - clang-checks
           config_params: '-G Ninja -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8'
       - build-template-linux:
           name: linux-gcc4.9-release
@@ -40,6 +45,8 @@ workflows:
       - build-template-linux:
           name: linux-clang8-release
           config_params: '-G Ninja -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8'
+          requires:
+            - clang-checks
       - build-template-linux:
           name: linux-clang8-sanitize-address
           requires:
@@ -62,10 +69,11 @@ workflows:
           config_params: '-G Ninja -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8 -DCMAKE_BUILD_TYPE=Sanitize -DMBGL_WITH_SANITIZER=undefined'
       - build-template-linux:
           name: qt5-linux-gcc5-release
+          requires:
+            - clang-checks
           config_params: '-G Ninja -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 -DMBGL_WITH_QT=ON'
           build_params: '--target mbgl-qt'
           test_params: '-Q -N'
-
 
 commands:
   prepare:
@@ -128,20 +136,22 @@ executors:
 
 
 jobs:
-  clang-tidy:
-    parameters:
-      config_params:
-        type: string
-        default: '-G Ninja'
+  clang-checks:
     executor: linux
     steps:
+      - checkout
+      - prepare
       - config:
-          config_params: << parameters.config_params >>
+          config_params: '-G Ninja'
+      - run:
+          name: Clang Format
+          command: |
+            git clang-format-8
       - run:
           name: Clang Tidy
           command: |
             cd build
-            run-clang-tidy -j8 -extra-arg-before="-I/usr/lib/llvm-8/include/c++/v1"
+            run-clang-tidy-8 -j8 -extra-arg-before="-I/usr/lib/llvm-8/include/c++/v1"
   build-template-linux:
     parameters:
       config_params:
